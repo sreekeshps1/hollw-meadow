@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hollow Meadow</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600&display=swap">
+<style>
+:root{--bg:#e4ede7;--ink:#1c2a24;--panel:#f8fbf9;--line:#b4c8bc;--accent:#2d6e5c;--accent-ink:#fff;--err:#a3321f;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1814;--ink:#e2eee7;--panel:#15241e;--line:#2b4338;--accent:#6fcfae;--accent-ink:#0e1814;--err:#ff8f7a}}
+:root[data-theme="dark"]{--bg:#0e1814;--ink:#e2eee7;--panel:#15241e;--line:#2b4338;--accent:#6fcfae;--accent-ink:#0e1814;--err:#ff8f7a}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,sans-serif;min-height:100vh}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+h1,h2,.pix{font-family:"Pixelify Sans",ui-monospace,monospace}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line)}
+h1{margin:0;font-size:26px;font-weight:600}
+#who{display:none;align-items:center;gap:10px}
+button{font:inherit;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 14px}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+main{max-width:1000px;margin:0 auto;padding:20px}
+#auth{max-width:380px;margin:40px auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+label{display:block;margin:12px 0 4px;font-size:14px}
+input[type=text],input[type=password]{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+fieldset{border:0;padding:0;margin:12px 0 0}
+legend{font-size:14px;padding:0}
+.radios{display:flex;gap:16px;margin-top:6px}
+.radios label{display:flex;align-items:center;gap:6px;margin:0;font-size:16px}
+#err{min-height:22px;margin:12px 0 0;color:var(--err);font-size:14px}
+#go{width:100%;margin-top:6px}
+#game{display:none;gap:20px;grid-template-columns:minmax(0,1fr) 210px;align-items:start}
+.stage{position:relative;width:100%;max-width:720px;aspect-ratio:3/2;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#3c7a4a}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
+#log{max-width:720px;height:120px;overflow-y:auto;margin-top:10px;padding:8px 10px;background:var(--panel);border:1px solid var(--line);border-radius:8px;font-size:14px}
+#cf{display:flex;gap:8px;max-width:720px;margin-top:8px}
+#ci{flex:1;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);font:inherit}
+aside{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;gap:14px}
+aside h2{margin:0;font-size:18px}
+#mini{width:100%;aspect-ratio:3/2;border:1px solid var(--line);border-radius:6px;image-rendering:pixelated}
+#roster{list-style:none;margin:0;padding:0;font-size:15px}
+#roster li{display:flex;align-items:center;gap:8px;padding:2px 0}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.sw{display:flex;align-items:center;gap:6px;margin:4px 0;font-size:14px}
+.sw span{width:42px}
+.sw button{width:22px;height:22px;padding:0;border-radius:50%}
+.sw button[aria-pressed="true"]{outline:2px solid var(--ink);outline-offset:1px}
+.hint{font-size:13px;opacity:.75;margin:0}
+#pad{display:none;grid-template-columns:repeat(3,52px);gap:6px;margin-top:14px;justify-content:center}
+#pad button{height:52px;padding:0;touch-action:none}
+#pad .u{grid-column:2}
+@media (pointer:coarse){#pad{display:grid}}
+#wm{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px}
+#wm .box{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;max-width:560px;width:100%}
+#wm h2{margin:0 0 14px}
+#wmlist{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:16px}
+.node{border:1px solid var(--line);border-radius:8px;padding:10px 14px;display:grid;gap:2px;font-size:14px}
+.node.here{border-color:var(--accent);border-width:2px}
+.link{font-size:22px}
+@media (max-width:720px){#game{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Hollow Meadow</h1>
+  <div id="who"><span>Playing as <strong id="me" class="pix"></strong></span><button id="out">Log out</button></div>
+</header>
+<main>
+  <section id="auth" aria-label="Account">
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tLogin" aria-selected="true">Log in</button>
+      <button role="tab" id="tReg" aria-selected="false">Create character</button>
+    </div>
+    <form id="f" autocomplete="on">
+      <label for="u">Character name</label>
+      <input type="text" id="u" autocomplete="username" maxlength="16" required>
+      <label for="p">Password</label>
+      <input type="password" id="p" autocomplete="current-password" required>
+      <fieldset id="gen" hidden>
+        <legend>Gender</legend>
+        <div class="radios">
+          <label><input type="radio" name="g" value="male" checked> Male</label>
+          <label><input type="radio" name="g" value="female"> Female</label>
+          <label><input type="radio" name="g" value="other"> Other</label>
+        </div>
+      </fieldset>
+      <p id="err" role="alert" aria-live="polite"></p>
+      <button class="primary" id="go" type="submit">Enter the meadow</button>
+    </form>
+  </section>
+
+  <section id="game">
+    <div>
+      <div class="stage">
+        <canvas id="cTerrain" width="720" height="480"></canvas>
+        <canvas id="cEntities" width="720" height="480"></canvas>
+      </div>
+      <div id="log" aria-live="polite"></div>
+      <form id="cf" autocomplete="off">
+        <input id="ci" maxlength="120" placeholder="Say something (press Enter to chat)" aria-label="Chat message">
+        <button class="primary">Send</button>
+      </form>
+      <div id="pad" aria-label="Move">
+        <button class="u" data-k="up" aria-label="Up">▲</button>
+        <button data-k="left" aria-label="Left">◀</button>
+        <button data-k="down" aria-label="Down">▼</button>
+        <button data-k="right" aria-label="Right">▶</button>
+      </div>
+    </div>
+    <aside>
+      <div>
+        <h2 id="mapname"></h2>
+        <canvas id="mini" width="150" height="100" aria-label="Minimap"></canvas>
+      </div>
+      <button id="wmb">World map (M)</button>
+      <div><h2>Here now</h2><ul id="roster"></ul></div>
+      <div><h2>Your look</h2><div id="look"></div></div>
+      <p class="hint">Move with arrow keys or WASD. Walk to a glowing ring to change maps.</p>
+    </aside>
+  </section>
+</main>
+
+<div id="wm" hidden role="dialog" aria-label="World map">
+  <div class="box">
+    <h2>World map</h2>
+    <div id="wmlist"></div>
+    <button id="wmx">Close</button>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const T = 24, W = 30, H = 20;
+const SKIN = ["#f0c9a0", "#d9a577", "#a8744a", "#6b4528"];
+const HAIR = ["#3a2a1e", "#b8862b", "#c9482b", "#2b2b33", "#e8e0d0"];
+const SHIRT = ["#3b6fd6", "#e0577a", "#8a5bd1", "#3aa070", "#e0a030", "#d85a3a"];
+const TILE = ["#4f9a5c", "#2f7fb0", "#4f9a5c", "#c9b27c", "#e3d29b", "#8d4f3c", "#b88a5a"];
+
+/* ───────── LAYER 1 · NETWORK ───────── */
+const Net = {
+  ws: null, on: {},
+  open(cb) {
+    const ws = this.ws = new WebSocket((location.protocol === "https:" ? "wss://" : "ws://") + location.host);
+    ws.onopen = cb;
+    ws.onmessage = e => { let m; try { m = JSON.parse(e.data); } catch (x) { return; } const h = Net.on[m.t]; if (h) h(m); };
+    ws.onclose = () => { if (Net.ws === ws) Game.lost(); };
+  },
+  send(o) { if (this.ws && this.ws.readyState === 1) this.ws.send(JSON.stringify(o)); },
+  close() { const w = this.ws; this.ws = null; if (w) w.close(); }
+};
+
+/* ───────── LAYER 2 · WORLD (map sent by the server) ───────── */
+const World = {
+  cv: $("cTerrain"), tiles: null, portals: [], id: "",
+  set(m) {
+    this.tiles = m.tiles; this.portals = m.portals; this.id = m.id;
+    const c = this.cv.getContext("2d"); let s = 3;
+    const r = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+    this.tiles.forEach((row, y) => row.forEach((t, x) => {
+      const n = r(), px = x * T, py = y * T;
+      c.fillStyle = TILE[t]; c.fillRect(px, py, T, T);
+      if (t === 0 || t === 2) { c.fillStyle = n < .5 ? "#5aa768" : "#468a52"; c.fillRect(px + n * 14, py + (1 - n) * 14, 4, 4); }
+      if (t === 1) { c.fillStyle = "#5fa4cc"; c.fillRect(px + n * 12, py + 8, 10, 2); }
+      if (t === 2) {
+        c.fillStyle = "#5b3d22"; c.fillRect(px + 10, py + 14, 5, 10);
+        c.fillStyle = "#2c6b3c"; c.beginPath(); c.arc(px + 12, py + 11, 11, 0, 7); c.fill();
+        c.fillStyle = "#378049"; c.beginPath(); c.arc(px + 9, py + 8, 5, 0, 7); c.fill();
+      }
+      if (t === 5) { c.fillStyle = "rgba(0,0,0,.18)"; c.fillRect(px, py + T - 3, T, 3); c.fillStyle = "#a85d47"; c.fillRect(px + 2, py + 2, T - 4, 3); }
+      if (t === 6) { c.fillStyle = "#4a2e1c"; c.fillRect(px + 5, py + 3, 14, T - 3); }
+    }));
+    c.strokeStyle = "#fff"; c.lineWidth = 2;
+    this.portals.forEach(p => { c.beginPath(); c.arc(p.x * T + 12, p.y * T + 12, 9, 0, 7); c.stroke(); });
+    $("mapname").textContent = m.name;
+  }
+};
+
+/* ───────── LAYER 3 · ENTITIES (snapshots from the server) ───────── */
+const Ents = new Map();
+let me = { name: "", gender: "", look: { skin: 0, hair: 0, shirt: 0 } };
+Net.on.s = m => {
+  const seen = new Set();
+  for (const [name, g, look, x, y, say] of m.p) {
+    seen.add(name);
+    let e = Ents.get(name); if (!e) { e = { x, y }; Ents.set(name, e); }
+    Object.assign(e, { name, g, look, tx: x, ty: y, say });
+    if (Math.hypot(e.x - x, e.y - y) > 60) { e.x = x; e.y = y; }
+  }
+  for (const k of [...Ents.keys()]) if (!seen.has(k)) Ents.delete(k);
+  roster();
+};
+
+/* ───────── LAYER 4 · RENDERER ───────── */
+const ec = $("cEntities").getContext("2d"), mc = $("mini").getContext("2d");
+function drawEnt(c, e) {
+  const x = Math.round(e.x), y = Math.round(e.y), L = e.look, mine = e.name === me.name;
+  c.fillStyle = "rgba(0,0,0,.25)"; c.beginPath(); c.ellipse(x, y + 8, 8, 3.5, 0, 0, 7); c.fill();
+  c.fillStyle = SHIRT[L.shirt]; c.fillRect(x - 5, y - 4, 10, 11);
+  c.fillStyle = HAIR[L.hair]; if (e.g === "female") c.fillRect(x - 6, y - 12, 12, 10);
+  c.fillStyle = SKIN[L.skin]; c.beginPath(); c.arc(x, y - 8, 5, 0, 7); c.fill();
+  c.fillStyle = HAIR[L.hair]; c.fillRect(x - 5, y - 13, 10, 3);
+  c.font = "600 12px 'Pixelify Sans', monospace"; c.textAlign = "center";
+  const w = c.measureText(e.name).width + 8;
+  c.fillStyle = mine ? "#fff" : "rgba(0,0,0,.55)"; c.fillRect(x - w / 2, y - 29, w, 14);
+  c.fillStyle = mine ? "#1c2a24" : "#fff"; c.fillText(e.name, x, y - 18);
+}
+function wrap(c, t, mw) {
+  const out = []; let l = "";
+  for (const w of t.split(" ")) { const n = l ? l + " " + w : w; if (c.measureText(n).width > mw && l) { out.push(l); l = w; } else l = n; }
+  out.push(l); return out;
+}
+function bubble(c, e) {
+  c.font = "12px system-ui, sans-serif"; c.textAlign = "center";
+  const lines = wrap(c, e.say, 160), bw = Math.min(176, Math.max(...lines.map(l => c.measureText(l).width)) + 12), bh = lines.length * 14 + 8;
+  const bx = Math.min(W * T - bw / 2 - 2, Math.max(bw / 2 + 2, e.x)), by = e.y - 34 - bh;
+  c.fillStyle = "#fff"; c.fillRect(bx - bw / 2, by, bw, bh);
+  c.fillStyle = "#1c2a24"; lines.forEach((l, i) => c.fillText(l, bx, by + 14 + i * 14));
+}
+function mini() {
+  mc.clearRect(0, 0, 150, 100); mc.drawImage(World.cv, 0, 0, 150, 100);
+  for (const e of Ents.values()) {
+    const m = e.name === me.name;
+    mc.fillStyle = SHIRT[e.look.shirt]; mc.strokeStyle = m ? "#fff" : "#000"; mc.lineWidth = m ? 2 : 1;
+    mc.beginPath(); mc.arc(e.x / (W * T) * 150, e.y / (H * T) * 100, m ? 4 : 3, 0, 7); mc.fill(); mc.stroke();
+  }
+}
+let last = 0, raf = 0;
+function frame(t) {
+  if (!Game.on) return;
+  const dt = Math.min(.1, (t - last) / 1000), k = 1 - Math.exp(-dt * 14); last = t;
+  for (const e of Ents.values()) { e.x += (e.tx - e.x) * k; e.y += (e.ty - e.y) * k; }
+  ec.clearRect(0, 0, W * T, H * T);
+  const list = [...Ents.values()].sort((a, b) => a.y - b.y);
+  list.forEach(e => drawEnt(ec, e)); list.forEach(e => e.say && bubble(ec, e));
+  mini(); raf = requestAnimationFrame(frame);
+}
+
+/* ───────── LAYER 5 · UI (roster, look, chat, world map) ───────── */
+let rk = "";
+function roster() {
+  const list = [...Ents.values()].sort((a, b) => a.name.localeCompare(b.name));
+  const k = list.map(e => e.name + e.look.shirt).join("|"); if (k === rk) return; rk = k;
+  const ul = $("roster"); ul.textContent = "";
+  for (const e of list) {
+    const li = document.createElement("li"), d = document.createElement("span"), n = document.createElement("span");
+    d.className = "dot"; d.style.background = SHIRT[e.look.shirt]; n.className = "pix";
+    n.textContent = e.name + (e.name === me.name ? " (you)" : ""); li.append(d, n); ul.append(li);
+  }
+}
+function buildLook() {
+  const box = $("look"); box.textContent = "";
+  [["skin", SKIN, "Skin"], ["hair", HAIR, "Hair"], ["shirt", SHIRT, "Shirt"]].forEach(([k, pal, name]) => {
+    const row = document.createElement("div"), lab = document.createElement("span");
+    row.className = "sw"; lab.textContent = name; row.append(lab);
+    pal.forEach((col, i) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.style.background = col; b.setAttribute("aria-label", name + " " + (i + 1));
+      b.setAttribute("aria-pressed", me.look[k] === i);
+      b.onclick = () => { me.look[k] = i; Net.send({ t: "look", look: me.look }); buildLook(); };
+      row.append(b);
+    });
+    box.append(row);
+  });
+}
+Net.on.chat = m => {
+  const d = document.createElement("div"), b = document.createElement("strong"), log = $("log");
+  b.textContent = m.from + ": "; d.append(b, document.createTextNode(m.text)); log.append(d);
+  while (log.children.length > 60) log.firstChild.remove();
+  log.scrollTop = log.scrollHeight;
+};
+$("cf").onsubmit = e => { e.preventDefault(); const t = $("ci").value.trim(); if (t) Net.send({ t: "chat", text: t }); $("ci").value = ""; };
+let maps = [];
+function drawWM() {
+  const box = $("wmlist"); box.textContent = "";
+  maps.forEach((mp, i) => {
+    if (i) { const a = document.createElement("span"); a.className = "link"; a.textContent = "↔"; box.append(a); }
+    const d = document.createElement("div"), n = document.createElement("strong"), s = document.createElement("span"), here = mp.id === World.id;
+    d.className = "node" + (here ? " here" : ""); n.className = "pix"; n.textContent = mp.name;
+    s.textContent = mp.n + (mp.n === 1 ? " player" : " players") + (here ? ", you are here" : ""); d.append(n, s); box.append(d);
+  });
+}
+const toggleWM = on => { $("wm").hidden = on === undefined ? !$("wm").hidden : !on; if (!$("wm").hidden) drawWM(); };
+$("wmb").onclick = () => toggleWM(true); $("wmx").onclick = () => toggleWM(false);
+Net.on.world = m => { maps = m.maps; if (!$("wm").hidden) drawWM(); };
+Net.on.map = m => { World.set(m); Ents.clear(); rk = ""; };
+
+/* ───────── INPUT ───────── */
+const keys = { up: 0, down: 0, left: 0, right: 0 }; let sent = "0,0";
+const km = { ArrowUp: "up", w: "up", W: "up", ArrowDown: "down", s: "down", S: "down", ArrowLeft: "left", a: "left", A: "left", ArrowRight: "right", d: "right", D: "right" };
+function push() {
+  const dx = keys.right - keys.left, dy = keys.down - keys.up, s = dx + "," + dy;
+  if (s !== sent) { sent = s; Net.send({ t: "in", dx, dy }); }
+}
+const resetKeys = () => { Object.keys(keys).forEach(k => keys[k] = 0); push(); };
+addEventListener("keydown", e => {
+  if (e.key === "Escape") toggleWM(false);
+  if (!Game.on || e.target.tagName === "INPUT") return;
+  if (km[e.key]) { keys[km[e.key]] = 1; push(); e.preventDefault(); }
+  else if (e.key === "Enter") { $("ci").focus(); e.preventDefault(); }
+  else if (e.key === "m" || e.key === "M") toggleWM();
+});
+addEventListener("keyup", e => { if (km[e.key]) { keys[km[e.key]] = 0; push(); } });
+$("ci").onfocus = resetKeys;
+document.querySelectorAll("#pad button").forEach(b => {
+  b.addEventListener("pointerdown", e => { e.preventDefault(); keys[b.dataset.k] = 1; push(); });
+  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => b.addEventListener(ev, () => { keys[b.dataset.k] = 0; push(); }));
+});
+
+/* ───────── GAME STATE & LOGIN ───────── */
+const Game = {
+  on: false,
+  start(m) {
+    me = m; this.on = true; $("p").value = "";
+    $("auth").style.display = "none"; $("game").style.display = "grid"; $("who").style.display = "flex";
+    $("me").textContent = m.name; buildLook(); last = performance.now(); raf = requestAnimationFrame(frame);
+  },
+  stop(msg) {
+    this.on = false; cancelAnimationFrame(raf); Ents.clear(); rk = ""; sent = "0,0";
+    Object.keys(keys).forEach(k => keys[k] = 0); toggleWM(false);
+    $("game").style.display = "none"; $("who").style.display = "none"; $("auth").style.display = "block";
+    $("err").textContent = $("err").textContent || msg || ""; $("go").disabled = false;
+  },
+  lost() { this.stop("Connection lost. Log in again."); }
+};
+Net.on.welcome = m => Game.start(m);
+Net.on.err = m => { if (Game.on) Game.stop(m.msg); else { $("err").textContent = m.msg; $("go").disabled = false; } };
+
+let mode = "login";
+function setMode(m) {
+  mode = m;
+  $("tLogin").setAttribute("aria-selected", m === "login"); $("tReg").setAttribute("aria-selected", m === "reg");
+  $("gen").hidden = m === "login"; $("go").textContent = m === "login" ? "Enter the meadow" : "Create and enter";
+  $("p").autocomplete = m === "login" ? "current-password" : "new-password"; $("err").textContent = "";
+}
+$("tLogin").onclick = () => setMode("login"); $("tReg").onclick = () => setMode("reg");
+$("f").addEventListener("submit", e => {
+  e.preventDefault(); $("err").textContent = ""; $("go").disabled = true;
+  const msg = { t: mode === "login" ? "login" : "register", name: $("u").value.trim(), pw: $("p").value, gender: document.querySelector('input[name="g"]:checked').value };
+  if (Net.ws && Net.ws.readyState === 1) Net.send(msg); else Net.open(() => Net.send(msg));
+});
+$("out").onclick = () => { Net.close(); Game.stop(""); setMode("login"); };
+})();
+</script>
+</body>
+</html>
